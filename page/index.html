@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <form action="http://127.0.0.1:8081/process_get" method="GET">
+        First Name: <input type="text" name="first_name"> <br>
+
+        Last Name: <input type="text" name="last_name">
+        <input type="submit" value="GET">
+    </form>
+    <form action="http://127.0.0.1:8081/addUser" method="POST">
+        First Name: <input type="text" name="first_name"> <br>
+
+        Last Name: <input type="text" name="last_name">
+        <input type="submit" value="POST">
+    </form>
+    <form action="http://127.0.0.1:8081/addUser" method="POST">
+        <input type="submit" value="ADDUSER">
+    </form>
+    <h3>文件上传：</h3>
+    选择一个文件上传: <br />
+    <form action="http://127.0.0.1:8081/addUser" method="post" enctype="multipart/form-data">
+        账号: <input type="text" name="userCount"> <br>
+
+        密码: <input type="text" name="userPassword">
+       
+        <input type="submit" value="注册" />
+    </form>
+</body>
+
+</html>
