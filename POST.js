@@ -1,7 +1,7 @@
 var mysql = require('mysql');
 var express = require('express');
 var app = express();
-var cors = require('cors');
+// var cors = require('cors');
 var fs = require("fs");
 var bodyParser = require('body-parser');
 var multer = require('multer');
@@ -11,13 +11,13 @@ const pathLib = require('path')
 // 创建 application/x-www-form-urlencoded 编码解析
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 // app.use(express.static('public'));
-app.use(cors());
+// app.use(cors());
 app.use(multer({ dest: '/tmp/' }).array('image'));
 app.get('/index.html', function (req, res) {
     res.sendFile(__dirname + "/page/" + "index.html");
 })
 
-app.all('/addUser', function(req, res, next) {
+app.all('addUser/', function(req, res, next) {
    res.header("Access-Control-Allow-Origin", "http://localhost:8080");
    res.header("Access-Control-Allow-Headers", "Content-Type,Access-Token");
    res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");

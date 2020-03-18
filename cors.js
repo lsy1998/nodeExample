@@ -9,7 +9,10 @@ var multer = require('multer');
 var querystring = require('querystring');
 var moment = require('moment');
 const pathLib = require('path')
+const multipart = require('connect-multiparty');
+const multipartyMiddleware = multipart();
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 // const cors = require('koa2-cors');
 //  app.use(cors());
 // 创建 application/x-www-form-urlencoded 编码解析
@@ -196,6 +199,76 @@ app.post('/addUserInfo', function (req, res) {
     connection.end();
 });
 
+
+app.post('/uploadHeadPic', multipartyMiddleware, function (req, res) {
+    // console.log(req.body);
+
+    console.log(req.files)
+    // console.log(req.files[0]);  // 上传的文件信息
+    // var dataObject = querystring.parse(req.body);
+    // var des_file = __dirname + "\\" + req.files[0].originalname;
+    var newPath = "C:\\Users\\hasee\\Desktop\\headPic\\" + Date.now() + ".png";
+
+    fs.rename(req.files.files.path, newPath, function(err){
+        if(err){
+            res.send({
+                code:res.statusCode,
+                msg:'上传失败'
+            });        
+            console.log('头像文件重命名失败',err);
+        }else{
+            console.log('头像文件重命名成功');
+
+            /**
+             * @description 连接数据库
+             */
+            var connection = mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                password: '123456',
+                port: '3306',
+                database: 'graduationproject'
+            });
+            // connection.connect();
+            connection.connect();
+
+            console.log(newPath);
+            // var reg = new RegExp( '\\' , "g" )
+            // var newstr = str.replace( reg , '天朝' );
+            newPath = newPath.replace(new RegExp('\\\\','g'), '\\\\');
+            console.log(newPath);
+            var addSql = 'update user set userImg = \''+newPath+'\' where userId = '+req.body.userId;//sql语句
+            // var addSqlParams = [req.body.userName, req.body.password,newPat,'1',0,0,0,0,Date.now()];
+
+            connection.query(addSql, function (err, result) {
+                if (err) {
+                    console.log('更新数据库失败：- ', err.message);
+                    return;
+                }
+                console.log('--------------------------上传头像----------------------------');       
+                console.log( result);
+                console.log('-----------------------------------------------------------------\n\n');
+
+            });
+
+            console.log('url'+newPath.split('C:\\\\Users\\\\hasee\\\\Desktop\\\\headPic\\\\'));
+            res.send({
+                code:res.statusCode,
+                msg:'上传成功',
+                headPicUrl:'http:\/\/localhost:8082\/headPic\/'+newPath.split('C:\\\\Users\\\\hasee\\\\Desktop\\\\headPic\\\\')[1]
+            }); 
+            connection.end();
+        }
+    })
+    // connection.end();
+});
+
+app.get('/headPic/*', function (req, res) {
+    console.log(__dirname);
+    console.log(req.url);
+    res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
+    console.log("Request for " + req.url + " received.");
+})
 const server = app.listen(8082, function () {
   console.log('Express app server listening on port %d', server.address().port);
 });
