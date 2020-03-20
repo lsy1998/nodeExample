@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 var querystring = require('querystring');
 var moment = require('moment');
-const pathLib = require('path')
+const path = require('path')
 const multipart = require('connect-multiparty');
 const multipartyMiddleware = multipart();
 app.use(bodyParser.json());
@@ -203,13 +203,13 @@ app.post('/addUserInfo', function (req, res) {
 app.post('/uploadHeadPic', multipartyMiddleware, function (req, res) {
     // console.log(req.body);
 
-    console.log(req.files)
+    // console.log(req.files)
     // console.log(req.files[0]);  // 上传的文件信息
     // var dataObject = querystring.parse(req.body);
     // var des_file = __dirname + "\\" + req.files[0].originalname;
-    var newPath = "C:\\Users\\hasee\\Desktop\\headPic\\" + Date.now() + ".png";
-
-    fs.rename(req.files.files.path, newPath, function(err){
+    var newPath =''+ Date.now() + path.extname(req.files.files.path);
+    var truePath = "C:\\Users\\hasee\\Desktop\\headPic\\" + newPath;
+    fs.rename(req.files.files.path, truePath, function(err){
         if(err){
             res.send({
                 code:res.statusCode,
@@ -229,16 +229,11 @@ app.post('/uploadHeadPic', multipartyMiddleware, function (req, res) {
                 port: '3306',
                 database: 'graduationproject'
             });
-            // connection.connect();
             connection.connect();
 
             console.log(newPath);
-            // var reg = new RegExp( '\\' , "g" )
-            // var newstr = str.replace( reg , '天朝' );
-            newPath = newPath.replace(new RegExp('\\\\','g'), '\\\\');
-            console.log(newPath);
-            var addSql = 'update user set userImg = \''+newPath+'\' where userId = '+req.body.userId;//sql语句
-            // var addSqlParams = [req.body.userName, req.body.password,newPat,'1',0,0,0,0,Date.now()];
+
+            var addSql = 'update user set userImg = \'http://localhost:8082/headPic/'+newPath+'\' where userId = '+req.body.userId;//sql语句
 
             connection.query(addSql, function (err, result) {
                 if (err) {
@@ -255,20 +250,199 @@ app.post('/uploadHeadPic', multipartyMiddleware, function (req, res) {
             res.send({
                 code:res.statusCode,
                 msg:'上传成功',
-                headPicUrl:'http:\/\/localhost:8082\/headPic\/'+newPath.split('C:\\\\Users\\\\hasee\\\\Desktop\\\\headPic\\\\')[1]
+                headPicUrl:'http:\/\/localhost:8082\/headPic\/'+newPath
             }); 
             connection.end();
         }
     })
-    // connection.end();
+});
+/**
+ * @description 上传md文件图片
+ */
+app.post('/uploadMDPic', multipartyMiddleware, function (req, res) {
+    console.log(req.files);
+    var newPath =''+ Date.now() + path.extname(req.files.files.path);
+    var truePath = "C:\\Users\\hasee\\Desktop\\MDPic\\" + newPath;
+    fs.rename(req.files.files.path, truePath, function(err){
+        if(err){
+            res.send({
+                code:res.statusCode,
+                msg:'上传失败'
+            });        
+            console.log('MD文件重命名失败',err);
+        }else{
+            console.log('MD文件重命名成功');
+
+            /**
+             * @description 连接数据库
+             */
+            var connection = mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                password: '123456',
+                port: '3306',
+                database: 'graduationproject'
+            });
+            connection.connect();
+
+            console.log(newPath);
+            var addSql = 'INSERT INTO postimg(postImgDate,postImgPath,userId) VALUES(?,?,?)';//sql语句
+            var addSqlParams = [moment().format('YYYY-MM-DD HH:mm:ss'), 'http://localhost:8082/MDPic/' + newPath, req.body.userId];
+            // var addSql = 'insert postimg postImgId postImgDate postImgPath postId userId  userId set userImg = \'http://localhost:8082/MDPic/'+newPath+'\' where userId = '+req.body.userId;//sql语句
+
+            connection.query(addSql, addSqlParams, function (err, result) {
+                if (err) {
+                    console.log('上传md图片失败：- ', err.message);
+                    return;
+                }
+                console.log('--------------------------上传md图片----------------------------');       
+                console.log( result);
+                console.log('-----------------------------------------------------------------\n\n');
+
+            });
+
+            console.log('url'+newPath.split('C:\\\\Users\\\\hasee\\\\Desktop\\\\MDPic\\\\'));
+            res.send({
+                code:res.statusCode,
+                msg:'上传成功',
+                MDPicUrl:'http:\/\/localhost:8082\/MDPic\/'+newPath
+            }); 
+            connection.end();
+        }
+    })
 });
 
+/**
+ * @description 获取帖子
+ */
+app.post('/getPost', multipartyMiddleware, function (req, res) {
+    var connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        port: '3306',
+        database: 'graduationproject'
+    });
+    connection.connect();
+   var addSql = 'select * from post where userId = '+req.body.userId;
+   connection.query(addSql, function (err, result) {
+    if (err) {
+        console.log('获取帖子失败：- ', err.message);
+        res.send({
+            code:res.statusCode,
+            msg:'获取帖子失败',
+            // postId:result.insertId
+        }); 
+        return;
+    }
+    console.log('--------------------------获取帖子----------------------------');       
+    console.log( result);
+    console.log('-----------------------------------------------------------------\n\n');
+
+    res.send({
+        code:res.statusCode,
+        msg:'获取成功',
+        post:result
+    }); 
+});
+
+connection.end();
+});
+/**
+ * @description 上传帖子
+ */
+app.post('/uploadPost', multipartyMiddleware, function (req, res) {
+    var connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        port: '3306',
+        database: 'graduationproject'
+    });
+    connection.connect();
+   var addSql = 'insert into post(postValue,postDate,userId,postTitle) VALUES(?,?,?,?)';//sql语句
+   var addSqlParams = [req.body.postValue, moment().format('YYYY-MM-DD HH:mm:ss'), req.body.userId, req.body.postTitle];
+   connection.query(addSql, addSqlParams, function (err, result) {
+    if (err) {
+        console.log('上传post失败：- ', err.message);
+        res.send({
+            code:res.statusCode,
+            msg:'上传失败',
+            // postId:result.insertId
+        }); 
+        return;
+    }
+    console.log('--------------------------上传post----------------------------');       
+    console.log( result);
+    console.log('-----------------------------------------------------------------\n\n');
+
+    res.send({
+        code:res.statusCode,
+        msg:'上传成功',
+        postId:result.insertId
+    }); 
+});
+
+connection.end();
+});
+/**
+ * @description 获取头像
+ */
 app.get('/headPic/*', function (req, res) {
     console.log(__dirname);
     console.log(req.url);
     res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
     console.log("Request for " + req.url + " received.");
 })
+/**
+ * @description 获取MD头像
+ */
+app.get('/MDPic/*', function (req, res) {
+    console.log(__dirname);
+    console.log(req.url);
+    res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
+    console.log("Request for " + req.url + " received.");
+})
+/**
+ * @description 获取用户信息
+ */
+app.post('/getUserInfo', function (req, res) {
+    // console.log(req.body);
+    var connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        port: '3306',
+        database: 'graduationproject'
+    });
+    connection.connect();
+
+    var addUser = 'select userCount, userName, userId, userImg, userGender, userSchool, userCompany, userJob, userLevel, userDate, userPage from user WHERE userId='+req.body.userId;//sql语句
+    console.log(addUser)
+    connection.query(addUser, function (err, result) {
+        if (err) {
+            console.log('[获取用户信息] - ', err.message);
+            res.send({
+                "code":res.statusCode,
+                "userId":result.insertId,
+                "msg":"获取个人信息失败"
+            });
+            return ;
+        } else {
+            console.log('--------------------------获取用户信息----------------------------');
+            console.log('[获取用户信息]:', result);
+            console.log('-----------------------------------------------------------------\n\n');
+            res.send({
+                "code":res.statusCode,
+                "userInfo":result,
+                "msg":"获取个人信息成功"
+            });
+        }
+
+    });
+
+    connection.end();
+});
 const server = app.listen(8082, function () {
   console.log('Express app server listening on port %d', server.address().port);
 });
