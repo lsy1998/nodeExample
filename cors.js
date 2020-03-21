@@ -315,7 +315,7 @@ app.post('/uploadMDPic', multipartyMiddleware, function (req, res) {
 /**
  * @description 获取帖子
  */
-app.post('/getPost', multipartyMiddleware, function (req, res) {
+app.post('/getAllPost', function (req, res) {
     var connection = mysql.createConnection({
         host: 'localhost',
         user: 'root',
@@ -348,6 +348,44 @@ app.post('/getPost', multipartyMiddleware, function (req, res) {
 
 connection.end();
 });
+
+/**
+ * @description 获取帖子
+ */
+app.post('/getPost', multipartyMiddleware, function (req, res) {
+    var connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        port: '3306',
+        database: 'graduationproject'
+    });
+    connection.connect();
+   var addSql = 'select * from post where postId = '+req.body.postId;
+   connection.query(addSql, function (err, result) {
+    if (err) {
+        console.log('获取帖子失败：- ', err.message);
+        res.send({
+            code:res.statusCode,
+            msg:'获取帖子失败',
+            // postId:result.insertId
+        }); 
+        return;
+    }
+    console.log('--------------------------获取帖子----------------------------');       
+    console.log( result);
+    console.log('-----------------------------------------------------------------\n\n');
+
+    res.send({
+        code:res.statusCode,
+        msg:'获取成功',
+        post:result
+    }); 
+});
+
+connection.end();
+});
+
 /**
  * @description 上传帖子
  */
@@ -385,6 +423,7 @@ app.post('/uploadPost', multipartyMiddleware, function (req, res) {
 
 connection.end();
 });
+
 /**
  * @description 获取头像
  */
@@ -394,6 +433,7 @@ app.get('/headPic/*', function (req, res) {
     res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
     console.log("Request for " + req.url + " received.");
 })
+
 /**
  * @description 获取MD头像
  */
@@ -403,6 +443,7 @@ app.get('/MDPic/*', function (req, res) {
     res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
     console.log("Request for " + req.url + " received.");
 })
+
 /**
  * @description 获取用户信息
  */
@@ -443,6 +484,7 @@ app.post('/getUserInfo', function (req, res) {
 
     connection.end();
 });
+
 const server = app.listen(8082, function () {
   console.log('Express app server listening on port %d', server.address().port);
 });
