@@ -195,6 +195,41 @@ app.post('/addUserInfo', function (req, res) {
         }
 
     });
+    connection.end();
+});
+
+app.post('/changePassword', function (req, res) {
+    // console.log(req.body);
+    var connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        port: '3306',
+        database: 'graduationproject'
+    });
+    connection.connect();
+
+    // var addUser = 'INSERT INTO user(userSchool,userJob,userCompany,userPage,userSex) VALUES(?,?,?,?,?) where userId = '+req.body.userId;//sql语句
+    var addUser = 'UPDATE user SET userPassword=\''+req.body.userPassword+'\' WHERE userCount='+req.body.userCount;//sql语句
+    console.log(addUser)
+    //   var addSqlParams = [req.body.userSchool,req.body.Job, req.body.userCompany, req.body.userPage,req.body.userSex];
+    //   console.log(moment().format('YYYY-MM-DD HH:mm:ss')); 
+    connection.query(addUser, function (err, result) {
+        if (err) {
+            console.log('[changePassword] - ', err.message);
+            return ;
+        } else {
+            console.log('--------------------------changePassword----------------------------');
+            console.log('changePassword:', result);
+            console.log('-----------------------------------------------------------------\n\n');
+            res.send({
+                "code":200,
+                "userId":result.insertId,
+                "msg":"修改密码成功"
+            });
+        }
+
+    });
 
     connection.end();
 });
