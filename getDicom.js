@@ -58,6 +58,13 @@ connection.query(sql,function(err,result){
 })
 })
 
+app.get('/dicomPic/*', function (req, res) {
+    console.log(__dirname);
+    console.log(req.url);
+    res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
+    console.log("Request for " + req.url + " received.");
+})
+
 const server = app.listen(8082, function () {
     console.log('Express app server listening on port %d', server.address().port);
   });

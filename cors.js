@@ -174,7 +174,7 @@ app.post('/addUserInfo', function (req, res) {
     connection.connect();
 
     // var addUser = 'INSERT INTO user(userSchool,userJob,userCompany,userPage,userSex) VALUES(?,?,?,?,?) where userId = '+req.body.userId;//sql语句
-    var addUser = 'UPDATE user SET userSchool=\''+req.body.userSchool+'\',userJob=\''+req.body.userJob+'\',userCompany=\''+req.body.userCompany+'\',userPage=\''+req.body.userPage+'\',userGender=\''+req.body.userGender+'\' WHERE userId='+req.body.userId;//sql语句
+    var addUser = 'UPDATE user SET userName=\''+req.body.userName+'\', userSchool=\''+req.body.userSchool+'\',userJob=\''+req.body.userJob+'\',userCompany=\''+req.body.userCompany+'\',userPage=\''+req.body.userPage+'\',userGender=\''+req.body.userGender+'\' WHERE userId='+req.body.userId;//sql语句
     console.log(addUser)
     //   var addSqlParams = [req.body.userSchool,req.body.Job, req.body.userCompany, req.body.userPage,req.body.userSex];
     //   console.log(moment().format('YYYY-MM-DD HH:mm:ss')); 
@@ -520,6 +520,111 @@ app.post('/getUserInfo', function (req, res) {
     connection.end();
 });
 
+/**
+ * @description 上传资源
+ */
+app.post('/uploadFile', multipartyMiddleware, function (req, res) {
+    console.log(req.files);
+    var truePath = "C:\\Users\\hasee\\Desktop\\resource\\" + req.files.file.originalFilename;
+    fs.rename(req.files.file.path, truePath, function(err){
+        if(err){
+            res.send({
+                code:res.statusCode,
+                msg:'上传失败'
+            });        
+            console.log('资源文件重命名失败',err);
+        }else{
+            console.log('资源文件重命名成功');
+            var connection = mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                password: '123456',
+                port: '3306',
+                database: 'graduationproject'
+            });
+            connection.connect();
+            var addSql = 'INSERT INTO file(filePath,userId,date,fileDesc) VALUES(?,?,?,?)';//sql语句
+            var addSqlParams = ['http://localhost:8082/resource/' + req.files.file.originalFilename, req.body.userId, moment().format('YYYY-MM-DD HH:mm:ss'), req.body.fileDesc];
+            connection.query(addSql, addSqlParams, function (err, result) {
+                if (err) {
+                    console.log('上传资源失败：- ', err.message);
+                    return;
+                }
+            });
+            res.send({
+                code:res.statusCode,
+                msg:'上传成功',
+                MDPicUrl:'http:\/\/localhost:8082\/resource\/'+req.files.file.originalFilename
+            }); 
+            connection.end();
+        }
+    })
+});
+
+/**
+ * @description 获取资源列表
+ */
+app.post('/getFileList', function (req, res) {
+            var connection = mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                password: '123456',
+                port: '3306',
+                database: 'graduationproject'
+            });
+            connection.connect();
+            var sql = 'select * from file where userId= '+  req.body.userId;//sql语句
+            console.log('sql :', sql);
+            connection.query(sql,function (err, result) {
+                if (err) {
+                    console.log('获取资源列表失败：- ', err.message);
+                    return;
+                }else{
+                    console.log('获取资源列表成功：- ', result);
+                    res.send({
+                        code:res.statusCode,
+                        msg:'获取资源列表成功',
+                        data: result
+                    }); 
+                }
+            });
+});
+
+/**
+ * 获取最新帖子
+ */
+app.post('/getNewPost', function (req, res) {
+    var connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        port: '3306',
+        database: 'graduationproject'
+    });
+    connection.connect();
+    var sql = 'select * from post'; //sql语句
+    console.log('sql :', sql);
+    connection.query(sql,function (err, result) {
+        if (err) {
+            console.log('获取最新帖子- ', err.message);
+            return;
+        }else{
+            console.log('获取最新帖子- ', result);
+            res.send({
+                code:res.statusCode,
+                msg:'获取最新帖子',
+                data: result
+            }); 
+        }
+    });
+});
+
+/**
+ * @description 下载文件
+ */
+app.get('/download', function(req, res, next) {
+    res.download("C:/Users/hasee/Desktop/resource/线代.rar");
+  });
 const server = app.listen(8082, function () {
   console.log('Express app server listening on port %d', server.address().port);
 });
