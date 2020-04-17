@@ -470,6 +470,16 @@ app.get('/headPic/*', function (req, res) {
 })
 
 /**
+ * @description 获取轮播图
+ */
+app.get('/lunbo/*', function (req, res) {
+    console.log(__dirname);
+    console.log(req.url);
+    res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
+    console.log("Request for " + req.url + " received.");
+})
+
+/**
  * @description 获取MD头像
  */
 app.get('/MDPic/*', function (req, res) {
@@ -493,7 +503,7 @@ app.post('/getUserInfo', function (req, res) {
     });
     connection.connect();
 
-    var addUser = 'select userCount, userName, userId, userImg, userGender, userSchool, userCompany, userJob, userLevel, userDate, userPage from user WHERE userId='+req.body.userId;//sql语句
+    var addUser = 'select userCount, userName, userId, userImg, userGender, userSchool, userCompany, userJob, userLevel, userDate, userCount, userPage from user WHERE userId='+req.body.userId;//sql语句
     console.log(addUser)
     connection.query(addUser, function (err, result) {
         if (err) {
@@ -525,7 +535,13 @@ app.post('/getUserInfo', function (req, res) {
  */
 app.post('/uploadFile', multipartyMiddleware, function (req, res) {
     console.log(req.files);
-    var truePath = "C:\\Users\\hasee\\Desktop\\resource\\" + req.files.file.originalFilename;
+    fs.exists("C:\\Users\\hasee\\Desktop\\resource\\"+req.body.userCount, function(exists) {
+        if(!exists){
+            fs.mkdirSync("C:\\Users\\hasee\\Desktop\\resource\\"+req.body.userCount)
+        }
+      });
+    // fs.mkdirSync("C:\\Users\\hasee\\Desktop\\resource\\"+req.body.userCount)
+    var truePath = "C:\\Users\\hasee\\Desktop\\resource\\"+req.body.userCount+"\\" + req.files.file.originalFilename;
     fs.rename(req.files.file.path, truePath, function(err){
         if(err){
             res.send({
@@ -543,8 +559,8 @@ app.post('/uploadFile', multipartyMiddleware, function (req, res) {
                 database: 'graduationproject'
             });
             connection.connect();
-            var addSql = 'INSERT INTO file(filePath,userId,date,fileDesc) VALUES(?,?,?,?)';//sql语句
-            var addSqlParams = ['http://localhost:8082/resource/' + req.files.file.originalFilename, req.body.userId, moment().format('YYYY-MM-DD HH:mm:ss'), req.body.fileDesc];
+            var addSql = 'INSERT INTO file(filePath,userId,date,fileDesc,userName,fileName) VALUES(?,?,?,?,?,?)';//sql语句
+            var addSqlParams = ['C:\\Users\\hasee\\Desktop\\resource\\' +req.body.userCount+'\\' + req.files.file.originalFilename, req.body.userId, moment().format('YYYY-MM-DD HH:mm:ss'), req.body.fileDesc, req.body.userName,  req.files.file.originalFilename];
             connection.query(addSql, addSqlParams, function (err, result) {
                 if (err) {
                     console.log('上传资源失败：- ', err.message);
@@ -623,8 +639,83 @@ app.post('/getNewPost', function (req, res) {
  * @description 下载文件
  */
 app.get('/download', function(req, res, next) {
-    res.download("C:/Users/hasee/Desktop/resource/线代.rar");
+    
+// let _path = path.resolve(__dirname, 'e-router'+'.js')
+let stats=fs.statSync(req.query.path)
+if(stats.isFile()){
+  res.set({
+    'Content-Type': 'application/octet-stream',
+    'Content-Disposition': 'attachment; filename=' + req.query.name,
+    'Content-Length': stats.size
   });
+  fs.createReadStream(req.query.path).pipe(res);
+}else{
+  console.log('导出的不是文件！')
+}
+    // res.setHeader('Content-disposition', 'attachment;'); 
+    // res.setHeader('Content-type', 'application/octet-stream;charset=utf-8'); 
+    // // console.log(res.header.content);
+    // res.download(req.query.path);
+    // console.log('下载成功');
+  });
+
+  /**
+   * @description 获取全部资源列表
+   */
+app.post('/getAllFileList', function (req, res) {
+    var connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        port: '3306',
+        database: 'graduationproject'
+    });
+    connection.connect();
+    var sql = 'select * from file';//sql语句
+    console.log('sql :', sql);
+    connection.query(sql,function (err, result) {
+        if (err) {
+            console.log('获取资源列表失败：- ', err.message);
+            return;
+        }else{
+            console.log('获取资源列表成功：- ', result);
+            res.send({
+                code:res.statusCode,
+                msg:'获取资源列表成功',
+                data: result
+            }); 
+        }
+    });
+});
+
+  /**
+   * @description 获取其他平台信息
+   */
+  app.post('/getOtherInfo', function (req, res) {
+    var connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '123456',
+        port: '3306',
+        database: 'graduationproject'
+    });
+    connection.connect();
+    var sql = 'select * from artical';//sql语句
+    console.log('sql :', sql);
+    connection.query(sql,function (err, result) {
+        if (err) {
+            console.log('获取其他平台信息失败：- ', err.message);
+            return;
+        }else{
+            console.log('获取其他平台信息成功：- ', result);
+            res.send({
+                code:res.statusCode,
+                msg:'获取其他平台信息成功',
+                data: result
+            }); 
+        }
+    });
+});
 const server = app.listen(8082, function () {
   console.log('Express app server listening on port %d', server.address().port);
 });
