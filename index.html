@@ -1,11 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="./prism.css">
+    <!-- <link rel="stylesheet" href="./styles/dark.css"> -->
+    <!-- <link rel="stylesheet"
+      href="./styles/idea.css"> -->
+      
 </head>
+
 <body>
-    <img src="http://localhost:8082/dicomPic/1/000001.dcm" alt="">
+    <div style="width:40%;height:100%">
+        <pre class="line-numbers"><code class="language-python">
+            for <input type="text"> in range(dstH-1):
+            for <kbd>j</kbd> in range(dstW-1):
+                scrx=round(i*(scrH/dstH))
+                scry=round(j*(scrW/dstW))
+                retimg[i,j]=img[scrx,scry]
+            return retimg
+        </code></pre>
+    </div>  
+    <div></div>
+    <img src="http://localhost:8082/jiaocheng/loginBackground.jpg" alt="">
+    <img id="image" src="http://localhost:8082/jiaocheng/loginBackground.jpg" alt="">
 </body>
+<script src="./prism.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+<script>
+    //   hljs.initHighlightingOnLoad();
+    axios({
+        url: 'http://127.0.0.1:5000/jiaocheng',
+        method: 'post',
+        data: {
+            name: 'loginBackground.jpg'
+        }
+    }).then((res) => {
+        console.log(res.data)
+        $('#image').attr('src', 'http://localhost:8082/jiaocheng/' + res.data.name)
+    })
+</script>
+
 </html>

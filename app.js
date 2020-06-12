@@ -29,6 +29,14 @@ app.all('*', function (req, res, next) {
   next();
 });
 
+app.get('/dicomPic/*', function (req, res) {
+    console.log(__dirname);
+    console.log(req.url);
+    // console.log()
+    res.sendFile("C:\\Users\\hasee\\Desktop\\NodeServer" + "\\" + req.url );
+    console.log("Request for " + req.url + " received.");
+})
+
 app.get('/hello', function (req, res) {
     var connection = mysql.createConnection({
         host: 'localhost',
@@ -234,16 +242,15 @@ app.post('/changePassword', function (req, res) {
     connection.end();
 });
 
-
 app.post('/uploadHeadPic', multipartyMiddleware, function (req, res) {
     // console.log(req.body);
 
-    // console.log(req.files)
-    // console.log(req.files[0]);  // 上传的文件信息
+    console.log(req.files)
+    console.log(req.files.file.path);  // 上传的文件信息
     // var dataObject = querystring.parse(req.body);
     // var des_file = __dirname + "\\" + req.files[0].originalname;
     var newPath =''+ Date.now() + path.extname(req.files.files.path);
-    var truePath = "C:\\Users\\hasee\\Desktop\\headPic\\" + newPath;
+    var truePath = "/root/NodeServer/headPic/" + newPath;
     fs.rename(req.files.files.path, truePath, function(err){
         if(err){
             res.send({
@@ -268,7 +275,7 @@ app.post('/uploadHeadPic', multipartyMiddleware, function (req, res) {
 
             console.log(newPath);
 
-            var addSql = 'update user set userImg = \'http://localhost:8082/headPic/'+newPath+'\' where userId = '+req.body.userId;//sql语句
+            var addSql = 'update user set userImg = \'http://47.115.131.98:39001/headPic/'+newPath+'\' where userId = '+req.body.userId;//sql语句
 
             connection.query(addSql, function (err, result) {
                 if (err) {
@@ -281,11 +288,11 @@ app.post('/uploadHeadPic', multipartyMiddleware, function (req, res) {
 
             });
 
-            console.log('url'+newPath.split('C:\\\\Users\\\\hasee\\\\Desktop\\\\headPic\\\\'));
+            // console.log('url'+newPath.split('C:\\\\Users\\\\hasee\\\\Desktop\\\\headPic\\\\'));
             res.send({
                 code:res.statusCode,
                 msg:'上传成功',
-                headPicUrl:'http:\/\/localhost:8082\/headPic\/'+newPath
+                headPicUrl:'http:\/\/47.115.131.98:39001\/headPic\/'+newPath
             }); 
             connection.end();
         }
@@ -297,7 +304,7 @@ app.post('/uploadHeadPic', multipartyMiddleware, function (req, res) {
 app.post('/uploadMDPic', multipartyMiddleware, function (req, res) {
     console.log(req.files);
     var newPath =''+ Date.now() + path.extname(req.files.files.path);
-    var truePath = "C:\\Users\\hasee\\Desktop\\MDPic\\" + newPath;
+    var truePath = "/root/NodeServer/MDPic/" + newPath;
     fs.rename(req.files.files.path, truePath, function(err){
         if(err){
             res.send({
@@ -322,8 +329,8 @@ app.post('/uploadMDPic', multipartyMiddleware, function (req, res) {
 
             console.log(newPath);
             var addSql = 'INSERT INTO postimg(postImgDate,postImgPath,userId) VALUES(?,?,?)';//sql语句
-            var addSqlParams = [moment().format('YYYY-MM-DD HH:mm:ss'), 'http://localhost:8082/MDPic/' + newPath, req.body.userId];
-            // var addSql = 'insert postimg postImgId postImgDate postImgPath postId userId  userId set userImg = \'http://localhost:8082/MDPic/'+newPath+'\' where userId = '+req.body.userId;//sql语句
+            var addSqlParams = [moment().format('YYYY-MM-DD HH:mm:ss'), 'http://47.115.131.98:39001/MDPic/' + newPath, req.body.userId];
+            // var addSql = 'insert postimg postImgId postImgDate postImgPath postId userId  userId set userImg = \'http://47.115.131.98:39001/MDPic/'+newPath+'\' where userId = '+req.body.userId;//sql语句
 
             connection.query(addSql, addSqlParams, function (err, result) {
                 if (err) {
@@ -336,11 +343,11 @@ app.post('/uploadMDPic', multipartyMiddleware, function (req, res) {
 
             });
 
-            console.log('url'+newPath.split('C:\\\\Users\\\\hasee\\\\Desktop\\\\MDPic\\\\'));
+            // console.log('url'+newPath.split('C:\\\\Users\\\\hasee\\\\Desktop\\\\MDPic\\\\'));
             res.send({
                 code:res.statusCode,
                 msg:'上传成功',
-                MDPicUrl:'http:\/\/localhost:8082\/MDPic\/'+newPath
+                MDPicUrl:'http:\/\/47.115.131.98:39001\/MDPic\/'+newPath
             }); 
             connection.end();
         }
@@ -465,7 +472,7 @@ connection.end();
 app.get('/headPic/*', function (req, res) {
     console.log(__dirname);
     console.log(req.url);
-    res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
+    res.sendFile("/root/NodeServer" + "/" + req.url );
     console.log("Request for " + req.url + " received.");
 })
 
@@ -475,7 +482,7 @@ app.get('/headPic/*', function (req, res) {
 app.get('/lunbo/*', function (req, res) {
     console.log(__dirname);
     console.log(req.url);
-    res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
+    res.sendFile("/root/NodeServer" + "/" + req.url );
     console.log("Request for " + req.url + " received.");
 })
 
@@ -485,7 +492,7 @@ app.get('/lunbo/*', function (req, res) {
 app.get('/MDPic/*', function (req, res) {
     console.log(__dirname);
     console.log(req.url);
-    res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url );
+    res.sendFile("/root/NodeServer" + "/" + req.url );
     console.log("Request for " + req.url + " received.");
 })
 
@@ -495,7 +502,7 @@ app.get('/MDPic/*', function (req, res) {
 app.get('/jiaocheng/*', function (req, res) {
     console.log(__dirname);
     console.log(req.url);
-    res.sendFile("C:\\Users\\hasee\\Desktop" + "/" + req.url.split("?")[0] );
+    res.sendFile("/root/NodeServer" + "/" + req.url.split("?")[0] );
     console.log("Request for " + req.url + " received.");
 })
 
@@ -545,13 +552,13 @@ app.post('/getUserInfo', function (req, res) {
  */
 app.post('/uploadFile', multipartyMiddleware, function (req, res) {
     console.log(req.files);
-    fs.exists("C:\\Users\\hasee\\Desktop\\resource\\"+req.body.userCount, function(exists) {
+    fs.exists("/root/NodeServer/resource/"+req.body.userCount, function(exists) {
         if(!exists){
-            fs.mkdirSync("C:\\Users\\hasee\\Desktop\\resource\\"+req.body.userCount)
+            fs.mkdirSync("/root/NodeServer/resource/"+req.body.userCount)
         }
       });
     // fs.mkdirSync("C:\\Users\\hasee\\Desktop\\resource\\"+req.body.userCount)
-    var truePath = "C:\\Users\\hasee\\Desktop\\resource\\"+req.body.userCount+"\\" + req.files.file.originalFilename;
+    var truePath = "/root/NodeServer/resource/"+req.body.userCount+"/" + req.files.file.originalFilename;
     fs.rename(req.files.file.path, truePath, function(err){
         if(err){
             res.send({
@@ -570,7 +577,7 @@ app.post('/uploadFile', multipartyMiddleware, function (req, res) {
             });
             connection.connect();
             var addSql = 'INSERT INTO file(filePath,userId,date,fileDesc,userName,fileName) VALUES(?,?,?,?,?,?)';//sql语句
-            var addSqlParams = ['C:\\Users\\hasee\\Desktop\\resource\\' +req.body.userCount+'\\' + req.files.file.originalFilename, req.body.userId, moment().format('YYYY-MM-DD HH:mm:ss'), req.body.fileDesc, req.body.userName,  req.files.file.originalFilename];
+            var addSqlParams = ['/root/NodeServer/resource/' +req.body.userCount+'/' + req.files.file.originalFilename, req.body.userId, moment().format('YYYY-MM-DD HH:mm:ss'), req.body.fileDesc, req.body.userName,  req.files.file.originalFilename];
             connection.query(addSql, addSqlParams, function (err, result) {
                 if (err) {
                     console.log('上传资源失败：- ', err.message);
@@ -580,7 +587,7 @@ app.post('/uploadFile', multipartyMiddleware, function (req, res) {
             res.send({
                 code:res.statusCode,
                 msg:'上传成功',
-                MDPicUrl:'http:\/\/localhost:8082\/resource\/'+req.files.file.originalFilename
+                MDPicUrl:'http:\/\/47.115.131.98:39001\/resource\/'+req.files.file.originalFilename
             }); 
             connection.end();
         }
